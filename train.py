@@ -48,7 +48,7 @@ def main():
     #loader = DataLoader(t_set, batch_size=args.batch_size)
     
     dataset = nc.SafeDataset(t_set)
-    loader = nc.SafeDataLoader(dataset,args.batch_size)
+    loader = nc.SafeDataLoader(dataset,args.batch_size, True)
 
     model = VICRegNet().to(args.device)
     optimizer = optim(model, args.weight_decay)
