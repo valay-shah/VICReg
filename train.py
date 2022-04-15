@@ -9,7 +9,8 @@ from torch.utils.tensorboard import SummaryWriter
 import os
 from tqdm import tqdm
 import nonechucks as nc
-#from torch.utils.data.dataloader import default_collate
+from torch.utils.data.dataloader import default_collate
+from torchvision.datasets import ImageFolder
 
 parser = argparse.ArgumentParser(description='VICReg Training')
 parser.add_argument('--path', help='path to dataset')
@@ -26,29 +27,30 @@ parser.add_argument('--save_chpt', default = 'checkpoints', help = 'path to save
 parser.add_argument('--save_freq', default=1000, help='step frequency to save checkpoints')
 
 
-# def my_collate(batch):
-#     batch = filter (lambda x:x is not None, batch)
-#     return default_collate(batch)
-# class MyImageFolder(ImageFolder):
-#     __init__ = ImageFolder.__init__
-#     def __getitem__(self, index):
-#         try: 
-#             return super(MyImageFolder, self).__getitem__(index)
-#         except Exception as e:
-#             print(e)
+def my_collate(batch):
+    batch = filter (lambda x:x is not None, batch)
+    return default_collate(batch)
+class MyImageFolder(ImageFolder):
+    __init__ = ImageFolder.__init__
+    def __getitem__(self, index):
+        try: 
+            return super(MyImageFolder, self).__getitem__(index)
+        except Exception as e:
+            print(e)
 
-# dataset= MyImageFolder('/home/x/train/', transform = augment )
-# dataloader=t.utils.data.DataLoader(dataset, 4, True, collate_fn=my_collate)
+
 
 def main():
     print('Training Starts')
     args = parser.parse_args()
     writer = SummaryWriter(log_dir=args.log_dir)
-    t_set = datasets.ImageFolder(root=args.path, transform=augment)
+    dataset= MyImageFolder(args.path, transform = augment)
+    loader=torch.utils.data.DataLoader(dataset, 4, True, collate_fn=my_collate)
+    #t_set = datasets.ImageFolder(root=args.path, transform=augment)
     #loader = DataLoader(t_set, batch_size=args.batch_size)
     
-    dataset = nc.SafeDataset(t_set)
-    loader = nc.SafeDataLoader(dataset,args.batch_size, True)
+    #dataset = nc.SafeDataset(t_set)
+    #loader = nc.SafeDataLoader(dataset,args.batch_size, True)
 
     model = VICRegNet().to(args.device)
     optimizer = optim(model, args.weight_decay)
